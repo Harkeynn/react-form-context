@@ -1,17 +1,15 @@
 import useFormContext from '../../utils/form/useFormContext';
 
 const FormValue = () => {
-  const context = useFormContext();
-
-  if (!context) {
-    return <div>Context not available</div>;
-  }
+  const { values } = useFormContext();
 
   return (
     <ul>
-      <li>{context.defaultValues?.test}</li>
-      <li>{context.yupSchema}</li>
-      <li>{context.validationMethod}</li>
+      {Object.keys(values).map((key) => (
+        <li key={key}>
+          {key}: {values[key as keyof typeof values]}
+        </li>
+      ))}
     </ul>
   );
 };
