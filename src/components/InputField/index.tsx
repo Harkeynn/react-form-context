@@ -1,5 +1,6 @@
 import { InputFieldProps } from './InputField.types';
 import { useFormContext } from '../../utils/form';
+import { useEffect, useState } from 'react';
 
 const InputField = ({
   name,
@@ -7,18 +8,38 @@ const InputField = ({
   onBlur,
   onChange,
   validationMethod,
+  status,
+  statusMessage,
 }: InputFieldProps) => {
-  const { setValues, values } = useFormContext();
+  const { setValue, values, errors } = useFormContext();
+  const [localStatus, setLocalStatus] = useState<'error' | undefined>();
+
+  useEffect(() => {
+    if (status) {
+      setLocalStatus(status);
+    } else {
+      setLocalStatus(errors[name] ? 'error' : undefined);
+    }
+  }, [name, errors, status]);
 
   return (
-    <label>
+    <label
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+      }}
+    >
       <span>{name}</span>
       <input
-        value={values[name as keyof typeof values]}
+        value={values[name as keyof typeof values] || ''}
         onChange={(event) => {
-          setValues({ [name]: event.target.value });
+          setValue(name, event.target.value);
         }}
       />
+      {localStatus === 'error' && (
+        <span style={{ color: 'red' }}>{statusMessage}</span>
+      )}
     </label>
   );
 };

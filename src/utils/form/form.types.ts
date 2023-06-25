@@ -1,17 +1,20 @@
-export interface FormProps<T = any> {
+export interface FormProps {
   validationMethod?: 'change' | 'blur';
   // We want it to be any so it can accept any type/structure of form
   yupSchema?: any;
-  defaultValues: T;
+  defaultValues: FormValues;
 }
 
-export interface FormContextProps<T> extends FormProps<T> {
-  values: Partial<T>;
-  setValues: (values: Partial<T>) => void;
+export interface FormContextProps extends FormProps {
+  values: FormValues;
+  setValues: (values: FormValues) => void;
+  setValue: (key: keyof FormValues, value: any) => void;
   reset: () => void;
+  errors: Record<keyof FormValues, string>;
 }
 
 // Change this interface according to your form values
 export interface FormValues {
-  test: string;
+  test1: string;
+  test2: string;
 }

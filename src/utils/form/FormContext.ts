@@ -1,8 +1,6 @@
 import { createContext } from 'react';
-import { FormContextProps, FormValues } from './form.types';
+import { FormContextProps } from './form.types';
 
-const FormContext = createContext<FormContextProps<FormValues> | undefined>(
-  undefined
-);
+const FormContext = createContext<FormContextProps | undefined>(undefined);
 
 export default FormContext;

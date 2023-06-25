@@ -1,7 +1,11 @@
+import { FormValues } from '../../utils/form';
+
 export interface InputFieldProps {
-  name: string;
+  name: keyof FormValues;
   fieldValue?: string;
   onChange?: (value?: string) => void;
   onBlur?: (value?: string) => void;
   validationMethod?: 'change' | 'blur';
+  status?: 'error';
+  statusMessage?: string;
 }
