@@ -27,6 +27,9 @@ const FormProvider = ({
     if (formProps.yupSchema) {
       formProps.yupSchema
         .validate(values, { abortEarly: false })
+        .then(() => {
+          setErrors({} as Record<keyof FormValues, string>);
+        })
         .catch((yupError: ValidationError) => {
           setErrors(
             yupError.inner.reduce((result, { path, message }) => {
