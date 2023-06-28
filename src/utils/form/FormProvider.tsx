@@ -1,26 +1,44 @@
-import { useEffect, useState } from 'react';
-import { FormProps, FormValues } from './form.types';
+import type { PropsWithChildren } from 'react';
+import { useCallback, useEffect, useReducer, useState } from 'react';
 import FormContext from './FormContext';
-import { ValidationError } from 'yup';
+import type { FormField, FormProps, FormValues } from './form.types';
+import type { ValidationError } from 'yup';
+
+const formReducer = (state: FormValues, payload: Partial<FormValues>) => {
+  return {
+    ...state,
+    ...payload,
+  };
+};
 
 const FormProvider = ({
   children,
   ...formProps
-}: React.PropsWithChildren<FormProps>) => {
-  const [values, setValues] = useState<FormValues>(formProps.defaultValues);
+}: PropsWithChildren<FormProps>) => {
+  const [values, updateValues] = useReducer(
+    formReducer,
+    formProps.defaultValues
+  );
   const [errors, setErrors] = useState<Record<keyof FormValues, string>>(
     {} as Record<keyof FormValues, string>
   );
 
+  const onChange = useCallback((value?: string, name?: keyof FormValues) => {
+    updateValues({ [name as string]: value });
+  }, []);
+
   const reset = () => {
-    setValues(formProps.defaultValues);
+    updateValues(formProps.defaultValues);
   };
 
-  const setValue = (key: keyof FormValues, value: any) => {
-    setValues({
-      ...values,
-      [key]: value,
-    });
+  const register = (name: keyof FormValues, options?: Partial<FormField>) => {
+    return {
+      name,
+      fieldValue: values[name],
+      onChange,
+      status: errors[name] ? 'error' : undefined,
+      ...options,
+    } as FormField;
   };
 
   useEffect(() => {
@@ -28,17 +46,25 @@ const FormProvider = ({
       formProps.yupSchema
         .validate(values, { abortEarly: false })
         .then(() => {
-          setErrors({} as Record<keyof FormValues, string>);
+          if (Object.keys(errors).length !== 0) {
+            setErrors({} as Record<keyof FormValues, string>);
+          }
         })
         .catch((yupError: ValidationError) => {
-          setErrors(
-            yupError.inner.reduce((result, { path, message }) => {
+          const newErrors = yupError.inner.reduce(
+            (result, { path, message }) => {
               result[path as keyof FormValues] = message;
               return result;
-            }, {} as Record<keyof FormValues, string>)
+            },
+            {} as Record<keyof FormValues, string>
           );
+          if (JSON.stringify(newErrors) !== JSON.stringify(errors)) {
+            setErrors(newErrors);
+          }
         });
     }
+    // We don't want to add errors to the dependencies to avoid unnecessary loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values, formProps.yupSchema]);
 
   return (
@@ -46,10 +72,10 @@ const FormProvider = ({
       value={{
         ...formProps,
         values,
-        setValues,
+        updateValues,
         reset,
-        setValue,
         errors,
+        register,
       }}
     >
       {children}

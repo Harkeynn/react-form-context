@@ -5,12 +5,22 @@ export interface FormProps {
   defaultValues: FormValues;
 }
 
+export interface FormField {
+  name: keyof FormValues;
+  fieldValue: string;
+  onChange?: (value?: string) => void;
+  onBlur?: (value?: string) => void;
+  validationMethod?: 'change' | 'blur';
+  status?: 'error';
+  statusMessage?: string;
+}
+
 export interface FormContextProps extends FormProps {
   values: FormValues;
-  setValues: (values: FormValues) => void;
-  setValue: (key: keyof FormValues, value: any) => void;
+  updateValues: (values: Partial<FormValues>) => void;
   reset: () => void;
   errors: Record<keyof FormValues, string>;
+  register: (name: keyof FormValues, options?: Partial<FormField>) => FormField;
 }
 
 // Change this interface according to your form values

@@ -1,8 +1,8 @@
 import { InputFieldProps } from './InputField.types';
-import { useFormContext } from '../../utils/form';
-import { useEffect, useState } from 'react';
+import { FC, memo } from 'react';
+import useRenderCount from '../../utils/useRenderCount';
 
-const InputField = ({
+const InputField: FC<InputFieldProps> = ({
   name,
   fieldValue,
   onBlur,
@@ -10,18 +10,8 @@ const InputField = ({
   validationMethod,
   status,
   statusMessage,
-}: InputFieldProps) => {
-  const { setValue, values, errors } = useFormContext();
-  const [localStatus, setLocalStatus] = useState<'error' | undefined>();
-
-  useEffect(() => {
-    if (status) {
-      setLocalStatus(status);
-    } else {
-      setLocalStatus(errors[name] ? 'error' : undefined);
-    }
-  }, [name, errors, status]);
-
+}) => {
+  const renderCount = useRenderCount();
   return (
     <label
       style={{
@@ -30,18 +20,20 @@ const InputField = ({
         alignItems: 'flex-start',
       }}
     >
-      <span>{name}</span>
+      <span>
+        {name} (render count : {renderCount.current})
+      </span>
       <input
-        value={values[name as keyof typeof values] || ''}
+        value={fieldValue}
         onChange={(event) => {
-          setValue(name, event.target.value);
+          onChange?.(event.target.value, name);
         }}
       />
-      {localStatus === 'error' && (
+      {status === 'error' && (
         <span style={{ color: 'red' }}>{statusMessage}</span>
       )}
     </label>
   );
 };
 
-export default InputField;
+export default memo(InputField);
