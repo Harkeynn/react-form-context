@@ -23,7 +23,12 @@ function App() {
       <FormProvider
         validationMethod={validationMethod}
         yupSchema={schema}
-        defaultValues={{ max10: 'test', min3: 'test' }}
+        defaultValues={{
+          max10: 'test',
+          min3: 'test',
+          forceBlur: undefined,
+          forceChange: undefined,
+        }}
       >
         <main>
           <FormSample />

@@ -13,13 +13,13 @@ const InputField: FC<PropsWithChildren<InputFieldProps>> = ({
   statusMessage,
 }) => {
   const renderCount = useRenderCount();
-  const [localFieldValue, setLocalFieldValue] = useState<string>(
-    fieldValue || ''
+  const [localFieldValue, setLocalFieldValue] = useState<string | undefined>(
+    fieldValue
   );
 
   useEffect(() => {
     if (localFieldValue !== fieldValue) {
-      setLocalFieldValue(fieldValue || '');
+      setLocalFieldValue(fieldValue);
     }
     // We only want to update local value when prop value change
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -37,7 +37,7 @@ const InputField: FC<PropsWithChildren<InputFieldProps>> = ({
         {children} (render count : {renderCount.current})
       </span>
       <input
-        value={localFieldValue}
+        value={localFieldValue || ''}
         onChange={(event) => {
           setLocalFieldValue(event.target.value);
           onChange?.(event.target.value, name);

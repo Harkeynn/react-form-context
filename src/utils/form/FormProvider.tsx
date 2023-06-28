@@ -3,6 +3,7 @@ import { useCallback, useEffect, useReducer, useState } from 'react';
 import FormContext from './FormContext';
 import type {
   FormField,
+  FormFieldStatus,
   FormFieldUpdate,
   FormProps,
   FormValues,
@@ -24,19 +25,43 @@ const FormProvider = ({
     formReducer,
     formProps.defaultValues
   );
+  const [touchedValues, setTouchedValues] = useState<(keyof FormValues)[]>([]);
   const [errors, setErrors] = useState<Record<keyof FormValues, string>>(
     {} as Record<keyof FormValues, string>
   );
 
-  const handleUpdate: FormFieldUpdate = useCallback((value, name) => {
-    updateValues({ [name as string]: value });
-  }, []);
+  const handleUpdate: FormFieldUpdate = useCallback(
+    (value, name) => {
+      if (name) {
+        updateValues({ [name]: value });
+        setTouchedValues((prevTValues) => {
+          const isValueTouched = prevTValues.includes(name);
+          if (value !== formProps.defaultValues[name] && !isValueTouched) {
+            return [...prevTValues, name];
+          }
+          if (value === formProps.defaultValues[name] && isValueTouched) {
+            return prevTValues.filter((tValue) => tValue !== name);
+          }
+          return prevTValues;
+        });
+      }
+    },
+    [formProps.defaultValues]
+  );
 
   const reset = () => {
     updateValues(formProps.defaultValues);
+    setTouchedValues([]);
   };
 
   const register = (name: keyof FormValues, options?: Partial<FormField>) => {
+    let status: FormFieldStatus;
+    if (errors[name]) {
+      status = 'error';
+    } else if (touchedValues.includes(name)) {
+      status = 'touched';
+    }
+
     const updateEvents: {
       onChange?: FormFieldUpdate;
       onBlur?: FormFieldUpdate;
@@ -52,7 +77,7 @@ const FormProvider = ({
     return {
       name,
       fieldValue: values[name],
-      status: errors[name] ? 'error' : undefined,
+      status,
       ...updateEvents,
       ...options,
     } as FormField;
@@ -89,10 +114,11 @@ const FormProvider = ({
       value={{
         ...formProps,
         values,
-        updateValues,
-        reset,
+        touchedValues,
         errors,
         register,
+        updateValues,
+        reset,
       }}
     >
       {children}

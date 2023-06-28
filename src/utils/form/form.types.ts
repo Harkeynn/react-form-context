@@ -5,6 +5,10 @@ export interface FormProps {
   defaultValues: FormValues;
 }
 
+export type FormValidationMethod = 'change' | 'blur' | undefined;
+
+export type FormFieldStatus = 'error' | 'touched' | undefined;
+
 export type FormFieldUpdate = (value?: string, name?: keyof FormValues) => void;
 
 export interface FormField {
@@ -12,17 +16,19 @@ export interface FormField {
   fieldValue: string;
   onChange?: FormFieldUpdate;
   onBlur?: FormFieldUpdate;
-  validationMethod?: 'change' | 'blur';
-  status?: 'error';
+  validationMethod?: FormValidationMethod;
+  status?: FormFieldStatus;
   statusMessage?: string;
+  touched?: boolean;
 }
 
 export interface FormContextProps extends FormProps {
   values: FormValues;
-  updateValues: (values: Partial<FormValues>) => void;
-  reset: () => void;
+  touchedValues: (keyof FormValues)[];
   errors: Record<keyof FormValues, string>;
   register: (name: keyof FormValues, options?: Partial<FormField>) => FormField;
+  updateValues: (values: Partial<FormValues>) => void;
+  reset: () => void;
 }
 
 // Change this interface according to your form values
