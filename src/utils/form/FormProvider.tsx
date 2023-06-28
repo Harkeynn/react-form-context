@@ -121,9 +121,11 @@ const FormProvider = ({
   );
 
   const reset = () => {
-    updateValues(formProps.defaultValues);
-    validation(formProps.defaultValues);
-    setTouchedValues([]);
+    if (JSON.stringify(formProps.defaultValues) !== JSON.stringify(values)) {
+      updateValues(formProps.defaultValues);
+      validation(formProps.defaultValues);
+      setTouchedValues([]);
+    }
   };
 
   const register = (name: keyof FormValues, options?: Partial<FormField>) => {
