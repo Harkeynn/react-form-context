@@ -1,14 +1,22 @@
 import { useState } from 'react';
+import { object, string } from 'yup';
 import './App.css';
+import FormResult from './components/FormResult';
 import FormSample from './components/FormSample';
 import FormValue from './components/FormValue';
+import type { FormValidationMethod, FormValues } from './utils/form';
 import { FormProvider } from './utils/form';
-import { object, string } from 'yup';
 
 function App() {
-  const [validationMethod, setValidationMethod] = useState<
-    'change' | 'blur' | undefined
-  >('change');
+  const defaultValues = {
+    max10: 'test',
+    min3: 'test',
+    forceBlur: undefined,
+    forceChange: undefined,
+  };
+  const [formValues, setFormValues] = useState<FormValues>(defaultValues);
+  const [validationMethod, setValidationMethod] =
+    useState<FormValidationMethod>('change');
 
   const schema = object({
     max10: string().max(10),
@@ -23,12 +31,8 @@ function App() {
       <FormProvider
         validationMethod={validationMethod}
         yupSchema={schema}
-        defaultValues={{
-          max10: 'test',
-          min3: 'test',
-          forceBlur: undefined,
-          forceChange: undefined,
-        }}
+        onValidSubmit={setFormValues}
+        defaultValues={defaultValues}
       >
         <main>
           <FormSample />
@@ -43,8 +47,10 @@ function App() {
             Switch validation method
           </button>
           <hr />
-          <h2>Form context :</h2>
-          <FormValue />
+          <div style={{ display: 'flex' }}>
+            <FormValue />
+            <FormResult values={formValues} />
+          </div>
         </main>
       </FormProvider>
     </div>

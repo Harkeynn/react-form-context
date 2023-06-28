@@ -7,10 +7,11 @@ const InputField: FC<PropsWithChildren<InputFieldProps>> = ({
   children,
   name,
   fieldValue,
-  onBlur,
-  onChange,
   status,
   statusMessage,
+  validationMethod,
+  onBlur,
+  onChange,
 }) => {
   const renderCount = useRenderCount();
   const [localFieldValue, setLocalFieldValue] = useState<string | undefined>(
@@ -40,10 +41,10 @@ const InputField: FC<PropsWithChildren<InputFieldProps>> = ({
         value={localFieldValue || ''}
         onChange={(event) => {
           setLocalFieldValue(event.target.value);
-          onChange?.(event.target.value, name);
+          onChange?.(event.target.value, name, validationMethod);
         }}
         onBlur={(event) => {
-          onBlur?.(event.target.value, name);
+          onBlur?.(event.target.value, name, validationMethod);
         }}
       />
       {status === 'error' && (

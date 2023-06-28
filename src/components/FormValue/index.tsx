@@ -8,14 +8,17 @@ const FormValue = () => {
     touchedValues.includes(key) ? 'Touched' : 'Untouched';
 
   return (
-    <ul>
-      {Object.keys(values).map((key) => (
-        <li key={key}>
-          {key}: {values[key as keyof FormValues]} (
-          {isValueTouched(key as keyof FormValues)})
-        </li>
-      ))}
-    </ul>
+    <div>
+      <h2>Form context</h2>
+      <ul>
+        {Object.keys(values).map((key) => (
+          <li key={key}>
+            {key}: {values[key as keyof FormValues]} (
+            {isValueTouched(key as keyof FormValues)})
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 };
 

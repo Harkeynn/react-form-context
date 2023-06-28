@@ -13,11 +13,11 @@ const FormSample = () => {
         Min length 3
       </InputField>
       <h2>Inputs using local validation method</h2>
-      <InputField {...register('forceChange', { validationMethod: 'change' })}>
-        Change
-      </InputField>
       <InputField {...register('forceBlur', { validationMethod: 'blur' })}>
         Blur
+      </InputField>
+      <InputField {...register('forceChange', { validationMethod: 'change' })}>
+        Change
       </InputField>
       <button type="button" onClick={reset}>
         Reset

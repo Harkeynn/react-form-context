@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react';
-import { useCallback, useEffect, useReducer, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import FormContext from './FormContext';
 import type {
   FormField,
@@ -10,30 +10,78 @@ import type {
 } from './form.types';
 import type { ValidationError } from 'yup';
 
-const formReducer = (state: FormValues, payload: Partial<FormValues>) => {
-  return {
-    ...state,
-    ...payload,
-  };
-};
-
 const FormProvider = ({
   children,
   ...formProps
 }: PropsWithChildren<FormProps>) => {
-  const [values, updateValues] = useReducer(
-    formReducer,
-    formProps.defaultValues
-  );
+  const [values, setValues] = useState<FormValues>(formProps.defaultValues);
   const [touchedValues, setTouchedValues] = useState<(keyof FormValues)[]>([]);
   const [errors, setErrors] = useState<Record<keyof FormValues, string>>(
     {} as Record<keyof FormValues, string>
   );
 
-  const handleUpdate: FormFieldUpdate = useCallback(
-    (value, name) => {
+  const updateValues = (newValues: Partial<FormValues>) => {
+    setValues((prevValues) => ({
+      ...prevValues,
+      ...newValues,
+    }));
+  };
+
+  const submit = () => {
+    formProps.onSubmit?.(values);
+    if (Object.keys(errors).length === 0) {
+      formProps.onValidSubmit?.(values);
+    }
+  };
+
+  const validation = useCallback(
+    (newValues: FormValues, prevErrors?: Record<keyof FormValues, string>) => {
+      !prevErrors && formProps.onSubmit?.(newValues);
+      if (formProps.yupSchema) {
+        formProps.yupSchema
+          .validate(newValues, { abortEarly: false })
+          .then(() => {
+            !prevErrors && formProps.onValidSubmit?.(newValues);
+            if (Object.keys(prevErrors || {}).length !== 0) {
+              setErrors({} as Record<keyof FormValues, string>);
+            }
+          })
+          .catch((yupError: ValidationError) => {
+            const newErrors = yupError.inner.reduce(
+              (result, { path, message }) => {
+                result[path as keyof FormValues] = message;
+                return result;
+              },
+              {} as Record<keyof FormValues, string>
+            );
+            if (JSON.stringify(newErrors) !== JSON.stringify(prevErrors)) {
+              setErrors(newErrors);
+            }
+          });
+      }
+    },
+    // We keep the dependencies as accurate as possible to avoid unnecessary re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [formProps.onSubmit, formProps.onValidSubmit, formProps.yupSchema]
+  );
+
+  const onChange: FormFieldUpdate = useCallback(
+    (value, name, validationMethod) => {
       if (name) {
-        updateValues({ [name]: value });
+        // We have to use this var to avoid the double call of validation
+        // since react calls the setState methods twice to be sure it doesn't mutate the state
+        let called = false;
+        setValues((prevValues) => {
+          const newValues = { ...prevValues, [name]: value || '' };
+          if (
+            (validationMethod || formProps.validationMethod) === 'change' &&
+            !called
+          ) {
+            called = true;
+            validation(newValues);
+          }
+          return newValues;
+        });
         setTouchedValues((prevTValues) => {
           const isValueTouched = prevTValues.includes(name);
           if (value !== formProps.defaultValues[name] && !isValueTouched) {
@@ -46,11 +94,35 @@ const FormProvider = ({
         });
       }
     },
-    [formProps.defaultValues]
+    [formProps.defaultValues, formProps.validationMethod, validation]
+  );
+
+  const onBlur: FormFieldUpdate = useCallback(
+    (value, name, validationMethod) => {
+      if (name) {
+        // We have to use this var to avoid the double call of validation
+        // since react calls the setState methods twice to be sure it doesn't mutate the state
+        let called = false;
+        setValues((prevValues) => {
+          const newValues = prevValues;
+          newValues[name] = value || '';
+          if (
+            (validationMethod || formProps.validationMethod) === 'blur' &&
+            !called
+          ) {
+            called = true;
+            validation(newValues);
+          }
+          return newValues;
+        });
+      }
+    },
+    [formProps.validationMethod, validation]
   );
 
   const reset = () => {
     updateValues(formProps.defaultValues);
+    validation(formProps.defaultValues);
     setTouchedValues([]);
   };
 
@@ -62,49 +134,18 @@ const FormProvider = ({
       status = 'touched';
     }
 
-    const updateEvents: {
-      onChange?: FormFieldUpdate;
-      onBlur?: FormFieldUpdate;
-    } = {
-      onChange: undefined,
-      onBlur: undefined,
-    };
-    const validationMethod =
-      options?.validationMethod || formProps.validationMethod;
-    updateEvents[validationMethod === 'blur' ? 'onBlur' : 'onChange'] =
-      handleUpdate;
-
     return {
       name,
       fieldValue: values[name],
       status,
-      ...updateEvents,
+      onChange,
+      onBlur,
       ...options,
     } as FormField;
   };
 
   useEffect(() => {
-    if (formProps.yupSchema) {
-      formProps.yupSchema
-        .validate(values, { abortEarly: false })
-        .then(() => {
-          if (Object.keys(errors).length !== 0) {
-            setErrors({} as Record<keyof FormValues, string>);
-          }
-        })
-        .catch((yupError: ValidationError) => {
-          const newErrors = yupError.inner.reduce(
-            (result, { path, message }) => {
-              result[path as keyof FormValues] = message;
-              return result;
-            },
-            {} as Record<keyof FormValues, string>
-          );
-          if (JSON.stringify(newErrors) !== JSON.stringify(errors)) {
-            setErrors(newErrors);
-          }
-        });
-    }
+    validation(values, errors);
     // We don't want to add errors to the dependencies to avoid unnecessary loop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values, formProps.yupSchema]);
@@ -118,6 +159,7 @@ const FormProvider = ({
         errors,
         register,
         updateValues,
+        submit,
         reset,
       }}
     >
