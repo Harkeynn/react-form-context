@@ -1,17 +1,30 @@
 import { InputFieldProps } from './InputField.types';
-import { FC, memo } from 'react';
+import type { FC, PropsWithChildren } from 'react';
+import { memo, useEffect, useState } from 'react';
 import useRenderCount from '../../utils/useRenderCount';
 
-const InputField: FC<InputFieldProps> = ({
+const InputField: FC<PropsWithChildren<InputFieldProps>> = ({
+  children,
   name,
   fieldValue,
   onBlur,
   onChange,
-  validationMethod,
   status,
   statusMessage,
 }) => {
   const renderCount = useRenderCount();
+  const [localFieldValue, setLocalFieldValue] = useState<string>(
+    fieldValue || ''
+  );
+
+  useEffect(() => {
+    if (localFieldValue !== fieldValue) {
+      setLocalFieldValue(fieldValue || '');
+    }
+    // We only want to update local value when prop value change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fieldValue]);
+
   return (
     <label
       style={{
@@ -21,12 +34,16 @@ const InputField: FC<InputFieldProps> = ({
       }}
     >
       <span>
-        {name} (render count : {renderCount.current})
+        {children} (render count : {renderCount.current})
       </span>
       <input
-        value={fieldValue}
+        value={localFieldValue}
         onChange={(event) => {
+          setLocalFieldValue(event.target.value);
           onChange?.(event.target.value, name);
+        }}
+        onBlur={(event) => {
+          onBlur?.(event.target.value, name);
         }}
       />
       {status === 'error' && (

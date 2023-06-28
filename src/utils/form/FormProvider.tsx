@@ -1,7 +1,12 @@
 import type { PropsWithChildren } from 'react';
 import { useCallback, useEffect, useReducer, useState } from 'react';
 import FormContext from './FormContext';
-import type { FormField, FormProps, FormValues } from './form.types';
+import type {
+  FormField,
+  FormFieldUpdate,
+  FormProps,
+  FormValues,
+} from './form.types';
 import type { ValidationError } from 'yup';
 
 const formReducer = (state: FormValues, payload: Partial<FormValues>) => {
@@ -23,7 +28,7 @@ const FormProvider = ({
     {} as Record<keyof FormValues, string>
   );
 
-  const onChange = useCallback((value?: string, name?: keyof FormValues) => {
+  const handleUpdate: FormFieldUpdate = useCallback((value, name) => {
     updateValues({ [name as string]: value });
   }, []);
 
@@ -32,11 +37,23 @@ const FormProvider = ({
   };
 
   const register = (name: keyof FormValues, options?: Partial<FormField>) => {
+    const updateEvents: {
+      onChange?: FormFieldUpdate;
+      onBlur?: FormFieldUpdate;
+    } = {
+      onChange: undefined,
+      onBlur: undefined,
+    };
+    const validationMethod =
+      options?.validationMethod || formProps.validationMethod;
+    updateEvents[validationMethod === 'blur' ? 'onBlur' : 'onChange'] =
+      handleUpdate;
+
     return {
       name,
       fieldValue: values[name],
-      onChange,
       status: errors[name] ? 'error' : undefined,
+      ...updateEvents,
       ...options,
     } as FormField;
   };

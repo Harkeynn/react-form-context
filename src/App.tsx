@@ -11,8 +11,8 @@ function App() {
   >('change');
 
   const schema = object({
-    test1: string().max(10),
-    test2: string().min(3),
+    max10: string().max(10),
+    min3: string().min(3),
   });
 
   return (
@@ -23,7 +23,7 @@ function App() {
       <FormProvider
         validationMethod={validationMethod}
         yupSchema={schema}
-        defaultValues={{ test1: 'test', test2: 'test' }}
+        defaultValues={{ max10: 'test', min3: 'test' }}
       >
         <main>
           <FormSample />

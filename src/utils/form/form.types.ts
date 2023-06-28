@@ -5,11 +5,13 @@ export interface FormProps {
   defaultValues: FormValues;
 }
 
+export type FormFieldUpdate = (value?: string, name?: keyof FormValues) => void;
+
 export interface FormField {
   name: keyof FormValues;
   fieldValue: string;
-  onChange?: (value?: string) => void;
-  onBlur?: (value?: string) => void;
+  onChange?: FormFieldUpdate;
+  onBlur?: FormFieldUpdate;
   validationMethod?: 'change' | 'blur';
   status?: 'error';
   statusMessage?: string;
@@ -25,6 +27,8 @@ export interface FormContextProps extends FormProps {
 
 // Change this interface according to your form values
 export interface FormValues {
-  test1: string;
-  test2: string;
+  max10: string;
+  min3: string;
+  forceChange?: string;
+  forceBlur?: string;
 }
