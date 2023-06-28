@@ -18,6 +18,17 @@ const InputField: FC<PropsWithChildren<InputFieldProps>> = ({
     fieldValue
   );
 
+  const getBackground = () => {
+    switch (status) {
+      case 'touched':
+        return '#b2d3ff';
+      case 'error':
+        return '#ffaeae';
+      default:
+        return '#fff';
+    }
+  };
+
   useEffect(() => {
     if (localFieldValue !== fieldValue) {
       setLocalFieldValue(fieldValue);
@@ -45,6 +56,9 @@ const InputField: FC<PropsWithChildren<InputFieldProps>> = ({
         }}
         onBlur={(event) => {
           onBlur?.(event.target.value, name, validationMethod);
+        }}
+        style={{
+          background: getBackground(),
         }}
       />
       {status === 'error' && (

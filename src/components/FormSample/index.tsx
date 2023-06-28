@@ -2,7 +2,7 @@ import { useFormContext } from '../../utils/form';
 import InputField from '../InputField';
 
 const FormSample = () => {
-  const { reset, register } = useFormContext();
+  const { register } = useFormContext();
   return (
     <form>
       <h2>Inputs using global validation method</h2>
@@ -19,9 +19,6 @@ const FormSample = () => {
       <InputField {...register('forceChange', { validationMethod: 'change' })}>
         Change
       </InputField>
-      <button type="button" onClick={reset}>
-        Reset
-      </button>
     </form>
   );
 };

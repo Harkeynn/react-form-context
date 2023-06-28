@@ -6,6 +6,7 @@ import FormSample from './components/FormSample';
 import FormValue from './components/FormValue';
 import type { FormValidationMethod, FormValues } from './utils/form';
 import { FormProvider } from './utils/form';
+import FormActions from './components/FormActions';
 
 function App() {
   const defaultValues = {
@@ -16,7 +17,7 @@ function App() {
   };
   const [formValues, setFormValues] = useState<FormValues>(defaultValues);
   const [validationMethod, setValidationMethod] =
-    useState<FormValidationMethod>('change');
+    useState<FormValidationMethod>();
 
   const schema = object({
     max10: string().max(10),
@@ -36,18 +37,11 @@ function App() {
       >
         <main>
           <FormSample />
-          <button
-            type="button"
-            onClick={() =>
-              setValidationMethod(
-                validationMethod === 'blur' ? 'change' : 'blur'
-              )
-            }
-          >
-            Switch validation method
-          </button>
-          <hr />
-          <div style={{ display: 'flex' }}>
+          <FormActions
+            validationMethod={validationMethod}
+            onMethodChange={setValidationMethod}
+          />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
             <FormValue />
             <FormResult values={formValues} />
           </div>

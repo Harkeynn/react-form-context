@@ -13,8 +13,8 @@ const FormValue = () => {
       <ul>
         {Object.keys(values).map((key) => (
           <li key={key}>
-            {key}: {values[key as keyof FormValues]} (
-            {isValueTouched(key as keyof FormValues)})
+            {key}: <b>{values[key as keyof FormValues]}</b>
+            &nbsp;({isValueTouched(key as keyof FormValues)})
           </li>
         ))}
       </ul>
