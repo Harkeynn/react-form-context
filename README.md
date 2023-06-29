@@ -46,6 +46,7 @@ Its generic type `T` default value is `Record<any, any>` and is used to type the
 - `defaultValues: T` : default form values
 - `validationMethod?: FormValidationMethod` : form validation method, between `change`, `blur` and `undefined` (to submit form via the context's method only)
 - `yupSchema?: any` : yup schema for validation
+- `changeDebounceTime?: number` : debounce time used to update context (and trigger change submit) in milliseconds
 - `onSubmit?: (values: T) => void` : form submit event
 - `onValidSubmit?: (values: T) => void` : form submit event that fires only if `yupSchema` is valid
 
