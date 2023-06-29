@@ -1,6 +1,6 @@
 # react-form-context
 
-React context provider for form state management and validation with yup.
+React context provider for form state management and validation with yup.  
 The code to be implemented is in the folder **utils/form**.
 
 ## Basic usage
@@ -29,8 +29,8 @@ export default MyForm = () => {
 
   return (
     <form>
-      <MyInput {...register('firstName')} />
-      <MyInput {...register('lastname')} />
+      <MyInputField {...register('firstName')} />
+      <MyInputField {...register('lastname')} />
     </form>
   );
 };
@@ -38,7 +38,7 @@ export default MyForm = () => {
 
 ## FormProvider<T>
 
-Provides context for state management and validation.
+Provides context for state management and validation.  
 Its generic type `T` default value is `Record<any, any>` and is used to type the data of the form if needed.
 
 ### Props (FormProps<T>)
@@ -51,7 +51,7 @@ Its generic type `T` default value is `Record<any, any>` and is used to type the
 
 ## useFormContext<T>
 
-Provides the `FormProvider`'s children access to the form context.
+Provides the `FormProvider`'s children access to the form context.  
 Its generic type `T` default value is `Record<any, any>` and is used to type the data of the form if needed.
 
 ### Props (FormContextProps<T> extends FormProps<T>)
@@ -72,4 +72,4 @@ Its generic type `T` default value is `Record<any, any>` and is used to type the
 
 ## Sandbox
 
-In the project directory, you can run `npm start` to run the sandbox (at [http://localhost:3000](http://localhost:3000))
+In the project directory, you can run `npm start` to start the sandbox (at [http://localhost:3000](http://localhost:3000)).
