@@ -6,21 +6,22 @@ import type {
   FormFieldStatus,
   FormFieldUpdate,
   FormProps,
-  FormValues,
+  FormValidationMethod,
 } from './form.types';
 import type { ValidationError } from 'yup';
 
-const FormProvider = ({
+const FormProvider = <T extends Record<any, any>>({
   children,
   ...formProps
-}: PropsWithChildren<FormProps>) => {
-  const [values, setValues] = useState<FormValues>(formProps.defaultValues);
-  const [touchedValues, setTouchedValues] = useState<(keyof FormValues)[]>([]);
-  const [errors, setErrors] = useState<Record<keyof FormValues, string>>(
-    {} as Record<keyof FormValues, string>
+}: PropsWithChildren<FormProps<T>>) => {
+  const [values, setValues] = useState<T>(formProps.defaultValues);
+  const [touchedValues, setTouchedValues] = useState<(keyof T)[]>([]);
+  const [errors, setErrors] = useState<Record<keyof T, string>>(
+    {} as Record<keyof T, string>
   );
 
-  const updateValues = (newValues: Partial<FormValues>) => {
+  // Easier way to update the values
+  const updateValues = (newValues: Partial<T>) => {
     setValues((prevValues) => ({
       ...prevValues,
       ...newValues,
@@ -34,8 +35,12 @@ const FormProvider = ({
     }
   };
 
+  // Validate yup schema and set errors accordingly
+  // We have to get values and errors through the args to avoid dependencies and unwanted re-renders
+  // If the previous errors are not provided, fires onSubmit and onValidSubmit
+  // (it allows us to determine wether we to trigger the submit or just update the context)
   const validation = useCallback(
-    (newValues: FormValues, prevErrors?: Record<keyof FormValues, string>) => {
+    (newValues: T, prevErrors?: Record<keyof T, string>) => {
       !prevErrors && formProps.onSubmit?.(newValues);
       if (formProps.yupSchema) {
         formProps.yupSchema
@@ -43,16 +48,16 @@ const FormProvider = ({
           .then(() => {
             !prevErrors && formProps.onValidSubmit?.(newValues);
             if (Object.keys(prevErrors || {}).length !== 0) {
-              setErrors({} as Record<keyof FormValues, string>);
+              setErrors({} as Record<keyof T, string>);
             }
           })
           .catch((yupError: ValidationError) => {
             const newErrors = yupError.inner.reduce(
               (result, { path, message }) => {
-                result[path as keyof FormValues] = message;
+                result[path as keyof T] = message;
                 return result;
               },
-              {} as Record<keyof FormValues, string>
+              {} as Record<keyof T, string>
             );
             if (JSON.stringify(newErrors) !== JSON.stringify(prevErrors)) {
               setErrors(newErrors);
@@ -65,23 +70,38 @@ const FormProvider = ({
     [formProps.onSubmit, formProps.onValidSubmit, formProps.yupSchema]
   );
 
-  const onChange: FormFieldUpdate = useCallback(
+  const eventUpdate = useCallback(
+    (
+      value: any,
+      eventType: 'change' | 'blur',
+      name: keyof T,
+      validationMethod?: FormValidationMethod
+    ) => {
+      // We have to use this var to avoid the double call of validation
+      // since react calls the setState methods twice to be sure it doesn't mutate the state
+      let called = false;
+      setValues((prevValues) => {
+        const newValues = { ...prevValues, [name]: value || '' };
+        if (
+          (validationMethod || formProps.validationMethod) === eventType &&
+          !called
+        ) {
+          called = true;
+          // We have to validate through the setState in order to avoid any dependencies that will cause unwanted re-renders
+          validation(newValues);
+        }
+        return newValues;
+      });
+    },
+    [formProps.validationMethod, validation]
+  );
+
+  const onChange: FormFieldUpdate<T> = useCallback(
     (value, name, validationMethod) => {
       if (name) {
-        // We have to use this var to avoid the double call of validation
-        // since react calls the setState methods twice to be sure it doesn't mutate the state
-        let called = false;
-        setValues((prevValues) => {
-          const newValues = { ...prevValues, [name]: value || '' };
-          if (
-            (validationMethod || formProps.validationMethod) === 'change' &&
-            !called
-          ) {
-            called = true;
-            validation(newValues);
-          }
-          return newValues;
-        });
+        eventUpdate(value, 'change', name, validationMethod);
+
+        // Setup touched values
         setTouchedValues((prevTValues) => {
           const isValueTouched = prevTValues.includes(name);
           if (value !== formProps.defaultValues[name] && !isValueTouched) {
@@ -94,32 +114,20 @@ const FormProvider = ({
         });
       }
     },
-    [formProps.defaultValues, formProps.validationMethod, validation]
+    [formProps.defaultValues, eventUpdate]
   );
 
-  const onBlur: FormFieldUpdate = useCallback(
+  const onBlur: FormFieldUpdate<T> = useCallback(
     (value, name, validationMethod) => {
       if (name) {
-        // We have to use this var to avoid the double call of validation
-        // since react calls the setState methods twice to be sure it doesn't mutate the state
-        let called = false;
-        setValues((prevValues) => {
-          const newValues = prevValues;
-          newValues[name] = value || '';
-          if (
-            (validationMethod || formProps.validationMethod) === 'blur' &&
-            !called
-          ) {
-            called = true;
-            validation(newValues);
-          }
-          return newValues;
-        });
+        eventUpdate(value, 'blur', name, validationMethod);
       }
     },
-    [formProps.validationMethod, validation]
+    [eventUpdate]
   );
 
+  // We check if the current values are different from the default ones to avoid unnecessary re-renders
+  // Then we reset values, errors and touched keys
   const reset = () => {
     if (JSON.stringify(formProps.defaultValues) !== JSON.stringify(values)) {
       updateValues(formProps.defaultValues);
@@ -128,7 +136,8 @@ const FormProvider = ({
     }
   };
 
-  const register = (name: keyof FormValues, options?: Partial<FormField>) => {
+  // This method provides all the necessary stuff for a component so it can be registered into the context
+  const register = (name: keyof T, options?: Partial<FormField<T>>) => {
     let status: FormFieldStatus;
     if (errors[name]) {
       status = 'error';
@@ -143,9 +152,10 @@ const FormProvider = ({
       onChange,
       onBlur,
       ...options,
-    } as FormField;
+    } as FormField<T>;
   };
 
+  // Errors update
   useEffect(() => {
     validation(values, errors);
     // We don't want to add errors to the dependencies to avoid unnecessary loop

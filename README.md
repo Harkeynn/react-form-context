@@ -1,50 +1,75 @@
 # react-form-context
 
-React context provider for form validation
+React context provider for form state management and validation with yup.
+The code to be implemented is in the folder **utils/form**.
 
-# Getting Started with Create React App
+## Basic usage
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+```tsx
+// App.tsx
+import { FormProvider } from '@/utils/form';
+import { MyForm } from '@/components';
 
-## Available Scripts
+export default App = () => (
+  <FormProvider
+    defaultValues={firstName: 'John', lastName: 'Doe'}
+  >
+    <MyForm/>
+  </FormProvider>
+);
+```
 
-In the project directory, you can run:
+```tsx
+// MyForm.tsx
+import { useFormContext } from '@/utils/form';
+import { MyInputField } from '@/components';
 
-### `npm start`
+export default MyForm = () => {
+  const { register } = useFormContext();
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+  return (
+    <form>
+      <MyInput {...register('firstName')} />
+      <MyInput {...register('lastname')} />
+    </form>
+  );
+};
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## FormProvider<T>
 
-### `npm test`
+Provides context for state management and validation.
+Its generic type `T` default value is `Record<any, any>` and is used to type the data of the form if needed.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Props (FormProps<T>)
 
-### `npm run build`
+- `defaultValues: T` : default form values
+- `validationMethod?: FormValidationMethod` : form validation method, between `change`, `blur` and `undefined` (to submit form via the context's method only)
+- `yupSchema?: any` : yup schema for validation
+- `onSubmit?: (values: T) => void` : form submit event
+- `onValidSubmit?: (values: T) => void` : form submit event that fires only if `yupSchema` is valid
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## useFormContext<T>
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Provides the `FormProvider`'s children access to the form context.
+Its generic type `T` default value is `Record<any, any>` and is used to type the data of the form if needed.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Props (FormContextProps<T> extends FormProps<T>)
 
-### `npm run eject`
+- `values: T` : form values as they are in the current context (NB: they can differ from the ones submitted)
+- `touchedValues: (keyof T)[]` : field keys that have been touched
+- `errors: Record<keyof T, string>` : yup errors
+- `register: (name: keyof T, options?: Partial<FormField<T>>) => FormField<T>` : this method is used to register a field in the context, it sets the following props of the input/component (and all of them can be overrided by the method's options or directly via the input/component props) :
+  - `name: keyof T`
+  - `fieldValue: string`
+  - `validationMethod?: FormValidationMethod`
+  - `status?: FormFieldStatus`
+  - `statusMessage?: string`
+  - `onChange?: FormFieldUpdate<T>`
+- `updateValues: (values: Partial<T>) => void` : update some values of the form
+- `submit: () => void` : submit the form
+- `reset: () => void` : reset the form to its default values
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Sandbox
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+In the project directory, you can run `npm start` to run the sandbox (at [http://localhost:3000](http://localhost:3000))

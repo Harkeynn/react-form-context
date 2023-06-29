@@ -2,8 +2,8 @@ import type {
   FormFieldStatus,
   FormFieldUpdate,
   FormValidationMethod,
-  FormValues,
 } from '../../utils/form';
+import type { FormValues } from '../../utils/types';
 
 export interface InputFieldProps {
   name: keyof FormValues;
@@ -11,6 +11,6 @@ export interface InputFieldProps {
   validationMethod?: FormValidationMethod;
   status?: FormFieldStatus;
   statusMessage?: string;
-  onChange?: FormFieldUpdate;
-  onBlur?: FormFieldUpdate;
+  onChange?: FormFieldUpdate<FormValues>;
+  onBlur?: FormFieldUpdate<FormValues>;
 }

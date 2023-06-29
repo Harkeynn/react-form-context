@@ -1,47 +1,38 @@
-export interface FormProps {
-  validationMethod?: 'change' | 'blur';
+export type FormValidationMethod = 'change' | 'blur' | undefined;
+
+export interface FormProps<T> {
+  validationMethod?: FormValidationMethod;
   // We want it to be any so it can accept any type/structure of form
   yupSchema?: any;
-  defaultValues: FormValues;
-  onSubmit?: (values: FormValues) => void;
-  onValidSubmit?: (values: FormValues) => void;
+  defaultValues: T;
+  onSubmit?: (values: T) => void;
+  onValidSubmit?: (values: T) => void;
 }
-
-export type FormValidationMethod = 'change' | 'blur' | undefined;
 
 export type FormFieldStatus = 'error' | 'touched' | undefined;
 
-export type FormFieldUpdate = (
-  value?: string,
-  name?: keyof FormValues,
+export type FormFieldUpdate<T> = (
+  value?: any,
+  name?: keyof T,
   validationMethod?: FormValidationMethod
 ) => void;
 
-export interface FormField {
-  name: keyof FormValues;
+export interface FormField<T> {
+  name: keyof T;
   fieldValue: string;
   validationMethod?: FormValidationMethod;
   status?: FormFieldStatus;
   statusMessage?: string;
-  touched?: boolean;
-  onChange?: FormFieldUpdate;
-  onBlur?: FormFieldUpdate;
+  onChange?: FormFieldUpdate<T>;
+  onBlur?: FormFieldUpdate<T>;
 }
 
-export interface FormContextProps extends FormProps {
-  values: FormValues;
-  touchedValues: (keyof FormValues)[];
-  errors: Record<keyof FormValues, string>;
-  register: (name: keyof FormValues, options?: Partial<FormField>) => FormField;
-  updateValues: (values: Partial<FormValues>) => void;
+export interface FormContextProps<T> extends FormProps<T> {
+  values: T;
+  touchedValues: (keyof T)[];
+  errors: Record<keyof T, string>;
+  register: (name: keyof T, options?: Partial<FormField<T>>) => FormField<T>;
+  updateValues: (values: Partial<T>) => void;
   submit: () => void;
   reset: () => void;
-}
-
-// Change this interface according to your form values
-export interface FormValues {
-  max10: string;
-  min3: string;
-  forceChange?: string;
-  forceBlur?: string;
 }

@@ -1,8 +1,9 @@
 import { useFormContext } from '../../utils/form';
+import type { FormValues } from '../../utils/types';
 import InputField from '../InputField';
 
 const FormSample = () => {
-  const { register } = useFormContext();
+  const { register } = useFormContext<FormValues>();
   return (
     <form>
       <h2>Inputs using global validation method</h2>

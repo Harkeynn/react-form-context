@@ -1,4 +1,4 @@
-import type { FormValues } from '../../utils/form';
+import type { FormValues } from '../../utils/types';
 
 export interface FormResultProps {
   values: FormValues;

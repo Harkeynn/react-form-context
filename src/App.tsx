@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { object, string } from 'yup';
 import './App.css';
+import FormActions from './components/FormActions';
 import FormResult from './components/FormResult';
 import FormSample from './components/FormSample';
 import FormValue from './components/FormValue';
-import type { FormValidationMethod, FormValues } from './utils/form';
+import type { FormValidationMethod } from './utils/form';
 import { FormProvider } from './utils/form';
-import FormActions from './components/FormActions';
+import type { FormValues } from './utils/types';
 
 function App() {
   const defaultValues = {
@@ -29,7 +30,7 @@ function App() {
       <header className="App-header">
         <h1>React Form Context</h1>
       </header>
-      <FormProvider
+      <FormProvider<FormValues>
         validationMethod={validationMethod}
         yupSchema={schema}
         onValidSubmit={setFormValues}

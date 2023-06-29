@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import type { FormValues } from '../../utils/form';
+import type { FormValues } from '../../utils/types';
 import type { FormResultProps } from './FormResult.types';
 
 const FormResult: FC<FormResultProps> = ({ values }) => {

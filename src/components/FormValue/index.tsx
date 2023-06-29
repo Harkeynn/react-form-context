@@ -1,4 +1,4 @@
-import type { FormValues } from '../../utils/form';
+import type { FormValues } from '../../utils/types';
 import useFormContext from '../../utils/form/useFormContext';
 
 const FormValue = () => {

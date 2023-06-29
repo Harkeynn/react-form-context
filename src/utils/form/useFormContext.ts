@@ -1,8 +1,9 @@
 import { useContext } from 'react';
 import FormContext from './FormContext';
+import { FormContextProps } from './form.types';
 
-const useFormContext = () => {
-  const context = useContext(FormContext);
+const useFormContext = <T extends Record<any, any>>() => {
+  const context = useContext<FormContextProps<T> | undefined>(FormContext);
 
   if (!context) {
     throw new Error(
