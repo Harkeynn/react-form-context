@@ -1,0 +1,85 @@
+.App {
+  text-align: center;
+}
+
+body {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 1vmin);
+  color: white;
+}
+
+h1 {
+  font-size: calc(10px + 3vmin);
+}
+
+h2 {
+  font-size: calc(10px + 2vmin);
+}
+
+input:not([type='radio']) {
+  height: calc(10px + 2vmin);
+  font-size: calc(10px + 1vmin);
+  transition: 0.3s;
+  border: none;
+  border-radius: 3px;
+  padding: 0 6px;
+  margin-bottom: 0.9rem;
+}
+
+label:has(input:not([type='radio'])) {
+  position: relative;
+}
+
+label:has(input:not([type='radio'])) > span:nth-of-type(2) {
+  position: absolute;
+  font-size: 0.8rem;
+  bottom: 0;
+}
+
+fieldset > label {
+  margin-right: 10px;
+  cursor: pointer;
+  position: relative;
+}
+
+fieldset > label > input {
+  cursor: pointer;
+}
+
+button {
+  padding: 5px 10px;
+  cursor: pointer;
+  border: none;
+  font-size: 1rem;
+  border-radius: 3px;
+  background: #3375cd;
+  color: #fff;
+  transition: 0.3s;
+}
+button:disabled {
+  background: #808080;
+  color: #bcbcbc;
+  pointer-events: none;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul > li {
+  font-size: 0.9rem;
+  color: #f0f0f0;
+}
+
+ul > li > b {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
