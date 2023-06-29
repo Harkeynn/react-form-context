@@ -5,6 +5,7 @@ export interface FormProps<T> {
   // We want it to be any so it can accept any type/structure of form
   yupSchema?: any;
   defaultValues: T;
+  changeDebounceTime?: number;
   onSubmit?: (values: T) => void;
   onValidSubmit?: (values: T) => void;
 }

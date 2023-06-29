@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { object, string } from 'yup';
 import './App.css';
 import FormActions from './components/FormActions';
@@ -10,20 +10,28 @@ import { FormProvider } from './utils/form';
 import type { FormValues } from './utils/types';
 
 function App() {
-  const defaultValues = {
-    max10: 'test',
-    min3: 'test',
-    forceBlur: undefined,
-    forceChange: undefined,
-  };
+  // We need to enclose these props in useMemo to prevent them from triggering the re-rendering of the form provider
+  const defaultValues = useMemo(
+    () => ({
+      max10: 'test',
+      min3: 'test',
+      forceBlur: undefined,
+      forceChange: undefined,
+    }),
+    []
+  );
+  const schema = useMemo(
+    () =>
+      object({
+        max10: string().max(10),
+        min3: string().min(3),
+      }),
+    []
+  );
+
   const [formValues, setFormValues] = useState<FormValues>(defaultValues);
   const [validationMethod, setValidationMethod] =
     useState<FormValidationMethod>();
-
-  const schema = object({
-    max10: string().max(10),
-    min3: string().min(3),
-  });
 
   return (
     <div className="App">
@@ -35,6 +43,7 @@ function App() {
         yupSchema={schema}
         onValidSubmit={setFormValues}
         defaultValues={defaultValues}
+        changeDebounceTime={300}
       >
         <main>
           <FormSample />

@@ -1,7 +1,7 @@
-import { FC } from 'react';
+import type { FC } from 'react';
 import useFormContext from '../../utils/form/useFormContext';
-import { FormActionsProps } from './FormActions.types';
-import { FormValidationMethod } from '../../utils/form';
+import type { FormActionsProps } from './FormActions.types';
+import type { FormValidationMethod } from '../../utils/form';
 
 const FormActions: FC<FormActionsProps> = ({
   validationMethod,

@@ -8,6 +8,7 @@ import type {
   FormProps,
   FormValidationMethod,
 } from './form.types';
+import debounce from 'lodash.debounce';
 import type { ValidationError } from 'yup';
 
 const FormProvider = <T extends Record<any, any>>({
@@ -96,24 +97,27 @@ const FormProvider = <T extends Record<any, any>>({
     [formProps.validationMethod, validation]
   );
 
-  const onChange: FormFieldUpdate<T> = useCallback(
-    (value, name, validationMethod) => {
-      if (name) {
-        eventUpdate(value, 'change', name, validationMethod);
+  const changeHandler: FormFieldUpdate<T> = (value, name, validationMethod) => {
+    if (name) {
+      eventUpdate(value, 'change', name, validationMethod);
 
-        // Setup touched values
-        setTouchedValues((prevTValues) => {
-          const isValueTouched = prevTValues.includes(name);
-          if (value !== formProps.defaultValues[name] && !isValueTouched) {
-            return [...prevTValues, name];
-          }
-          if (value === formProps.defaultValues[name] && isValueTouched) {
-            return prevTValues.filter((tValue) => tValue !== name);
-          }
-          return prevTValues;
-        });
-      }
-    },
+      // Setup touched values
+      setTouchedValues((prevTValues) => {
+        const isValueTouched = prevTValues.includes(name);
+        if (value !== formProps.defaultValues[name] && !isValueTouched) {
+          return [...prevTValues, name];
+        }
+        if (value === formProps.defaultValues[name] && isValueTouched) {
+          return prevTValues.filter((tValue) => tValue !== name);
+        }
+        return prevTValues;
+      });
+    }
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const onChange: FormFieldUpdate<T> = useCallback(
+    debounce(changeHandler, formProps.changeDebounceTime || 0),
     [formProps.defaultValues, eventUpdate]
   );
 
